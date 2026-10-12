@@ -1,0 +1,10 @@
+{
+  "name": "gemini-chatbot-backend",
+  "version": "1.0.0",
+  "description": "Gemini Chatbot Python Backend Server",
+  "scripts": {
+    "start": "python server.py",
+    "dev": "python server.py",
+    "migrate": "python migrate.py"
+  }
+}

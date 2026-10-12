@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini AI Chatbot + Supabase</title>
+  
+  <!-- Fonts & Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Frontend Styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========================================== -->
+  <!-- SIDEBAR: Controls, Status & Chat History   -->
+  <!-- ========================================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Gemini Chat <span class="brand-tag">Supabase</span></div>
+      </div>
+    </div>
+
+    <button id="btnNewChat" class="btn-new-chat">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      New Conversation
+    </button>
+
+    <!-- Past Conversations from Supabase -->
+    <div class="sidebar-section history-section">
+      <div class="section-title">Saved Chats (Supabase)</div>
+      <div id="conversationsList" class="conversations-list">
+        <div class="history-empty">No conversations loaded yet.</div>
+      </div>
+    </div>
+
+    <!-- Configuration Panel -->
+    <div class="sidebar-section">
+      <div class="section-title">Connections & Settings</div>
+      <div class="config-card">
+        <!-- Gemini Status -->
+        <div id="apiStatusBadge" class="api-status-badge">
+          <span class="status-dot"></span>
+          <span id="apiStatusText">Checking Gemini...</span>
+        </div>
+
+        <!-- Supabase Status -->
+        <div id="supabaseStatusBadge" class="api-status-badge">
+          <span class="status-dot"></span>
+          <span id="supabaseStatusText">Checking Supabase...</span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="apiKeyInput">Gemini API Key</label>
+          <input type="password" id="apiKeyInput" placeholder="Optional if set in .env" autocomplete="off">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="modelSelect">Select Model</label>
+          <select id="modelSelect">
+            <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Fast & Capable)</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+            <option value="gemini-1.5-pro">gemini-1.5-pro (Reasoning)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="systemPrompt">System Persona</label>
+          <textarea id="systemPrompt" rows="2">You are a helpful, knowledgeable, and polite AI assistant.</textarea>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- MAIN CHAT AREA                             -->
+  <!-- ========================================== -->
+  <main class="chat-container">
+    <header class="chat-header">
+      <div class="model-indicator">
+        <span>Active Model:</span>
+        <span class="model-pill" id="activeModelLabel">gemini-2.5-flash</span>
+      </div>
+      <div class="header-actions">
+        <button id="btnClear" class="btn-icon" title="Clear Chat History">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="messages-area" id="messagesArea">
+      <div class="welcome-hero" id="welcomeHero">
+        <div class="hero-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        </div>
+        <h1 class="hero-title">How can Gemini help you today?</h1>
+        <p class="hero-subtitle">Chat with Google's state-of-the-art multimodal AI model. Conversations are automatically synced to your Supabase database.</p>
+
+        <div class="prompt-suggestions">
+          <div class="suggestion-card" data-prompt="Explain how Large Language Models work in simple terms.">
+            <div class="suggestion-title">Explain LLMs</div>
+            <div class="suggestion-desc">Simple breakdown of language models</div>
+          </div>
+          <div class="suggestion-card" data-prompt="Write a Python function to fetch and parse JSON from a REST API.">
+            <div class="suggestion-title">Python Code</div>
+            <div class="suggestion-desc">Fetch and parse JSON with requests</div>
+          </div>
+          <div class="suggestion-card" data-prompt="Suggest 5 creative ideas for a weekend coding project.">
+            <div class="suggestion-title">Project Ideas</div>
+            <div class="suggestion-desc">Fun hacks to build over a weekend</div>
+          </div>
+          <div class="suggestion-card" data-prompt="Write a professional email following up on a job interview.">
+            <div class="suggestion-title">Draft Email</div>
+            <div class="suggestion-desc">Follow-up note for hiring manager</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Dock -->
+    <div class="input-dock">
+      <div class="input-box">
+        <textarea
+          id="userInput"
+          class="chat-textarea"
+          rows="1"
+          placeholder="Ask Gemini anything... (Shift+Enter for new line)"
+        ></textarea>
+        <button id="sendBtn" class="send-btn" title="Send Message">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="input-footnote">
+        Gemini 2.5 LLM + Supabase PostgreSQL Storage
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

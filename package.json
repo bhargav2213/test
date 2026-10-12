@@ -1,0 +1,12 @@
+{
+  "name": "gemini-chatbot",
+  "version": "1.0.0",
+  "description": "Gemini AI Chatbot + Supabase",
+  "scripts": {
+    "start": "python backend/server.py",
+    "dev": "python backend/server.py",
+    "cli": "python cli_chatbot.py",
+    "migrate": "python backend/migrate.py",
+    "db:push": "npx supabase db push"
+  }
+}
